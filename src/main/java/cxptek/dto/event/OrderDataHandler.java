@@ -2,9 +2,17 @@ package cxptek.dto.event;
 
 import cxptek.dto.event.enums.OrderStatus;
 
-public class OrderDataHandler extends AbstractOrderHandler {
+public class OrderDataHandler extends BaseOrderHandler {
 
-    private static final String NAME = "OrderDataHandler";
+    private String name = "OrderDataHandler";
+
+
+    public OrderDataHandler() {
+    }
+
+    public OrderDataHandler(String name) {
+        this.name = name;
+    }
 
     @Override
     public void onEvent(OrderEvent event, long sequence, boolean endOfBatch) {
@@ -13,7 +21,8 @@ public class OrderDataHandler extends AbstractOrderHandler {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        OrderStatus previousStatus = event.getStatus();
         event.setStatus(OrderStatus.PERSISTED);
-        logOrderEvent(NAME, sequence, event);
+        logOrderEvent(name, sequence, event, previousStatus);
     }
 }

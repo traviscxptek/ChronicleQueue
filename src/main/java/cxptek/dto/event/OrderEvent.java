@@ -12,13 +12,11 @@ import java.nio.BufferUnderflowException;
 
 @Slf4j
 @SuperBuilder
-public class OrderEvent extends AbstractOrderEvent {
+public class OrderEvent extends BaseOrderEvent {
 
     @Override
     public String getPayload() {
-        return """
-                 Event Id: " %d  status: %s
-                """.formatted(this.id, this.status);
+        return " Order Id:  %d  status: %s ".formatted(this.id, this.status);
     }
 
     @Override
@@ -28,14 +26,21 @@ public class OrderEvent extends AbstractOrderEvent {
 
     @Override
     public void readMarshallable(BytesIn<?> bytes)
-            throws IORuntimeException, BufferUnderflowException, IllegalStateException, InvalidMarshallableException {
+            throws IORuntimeException,
+            BufferUnderflowException,
+            IllegalStateException,
+            InvalidMarshallableException {
         log.info("OrderEvent readMarshallable");
         super.readMarshallable(bytes);
     }
 
     @Override
     public void writeMarshallable(BytesOut<?> bytes)
-            throws IllegalStateException, BufferOverflowException, BufferUnderflowException, ArithmeticException, InvalidMarshallableException {
+            throws IllegalStateException,
+            BufferOverflowException,
+            BufferUnderflowException,
+            ArithmeticException,
+            InvalidMarshallableException {
         log.info("OrderEvent writeMarshallable");
         super.writeMarshallable(bytes);
     }

@@ -2,7 +2,7 @@ package cxptek.dto.event;
 
 import cxptek.dto.event.enums.OrderStatus;
 
-public class NotificationHandler extends AbstractOrderHandler {
+public class NotificationHandler extends BaseOrderHandler {
 
     private static final String NAME = "NotificationHandler";
 
@@ -13,7 +13,8 @@ public class NotificationHandler extends AbstractOrderHandler {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        OrderStatus previousStatus = event.getStatus();
         event.setStatus(OrderStatus.NOTIFIED);
-        logOrderEvent(NAME, sequence, event);
+        logOrderEvent(NAME, sequence, event, previousStatus);
     }
 }

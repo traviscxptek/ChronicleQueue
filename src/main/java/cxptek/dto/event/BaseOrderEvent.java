@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Setter
 @Getter
 @SuperBuilder
-public abstract class AbstractOrderEvent implements BytesMarshallable, Serializable {
+public abstract class BaseOrderEvent implements BytesMarshallable, Serializable {
     protected Long id; //maybe NULL
     protected String message;
     protected OrderStatus status;
