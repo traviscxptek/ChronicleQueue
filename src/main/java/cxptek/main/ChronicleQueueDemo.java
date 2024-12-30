@@ -1,4 +1,4 @@
-package org.main;
+package cxptek.main;
 
 import net.openhft.chronicle.bytes.Bytes;
 import net.openhft.chronicle.queue.ChronicleQueue;
@@ -7,7 +7,7 @@ import net.openhft.chronicle.queue.ExcerptTailer;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Main {
+public class ChronicleQueueDemo {
     public static void main(String[] args) {
         int testRecord = 5000000;
         final Bytes<byte[]> byteBuffer = Bytes.allocateElasticOnHeap(4 * 1024);
@@ -27,7 +27,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        new Thread(Main::consumer).start();
+        new Thread(ChronicleQueueDemo::consumer).start();
     }
 
     private static void consumer() {

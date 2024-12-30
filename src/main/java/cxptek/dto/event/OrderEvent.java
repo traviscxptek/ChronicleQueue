@@ -1,5 +1,6 @@
-package org.dto.event;
+package cxptek.dto.event;
 
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import net.openhft.chronicle.bytes.BytesIn;
 import net.openhft.chronicle.bytes.BytesOut;
@@ -10,15 +11,14 @@ import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 
 @Slf4j
-public class LongEvent extends AbstractEvent {
-
-    public LongEvent() {
-        super.id = System.currentTimeMillis();
-    }
+@SuperBuilder
+public class OrderEvent extends AbstractOrderEvent {
 
     @Override
     public String getPayload() {
-        return String.valueOf(super.id);
+        return """
+                 Event Id: " %d  status: %s
+                """.formatted(this.id, this.status);
     }
 
     @Override
@@ -29,14 +29,14 @@ public class LongEvent extends AbstractEvent {
     @Override
     public void readMarshallable(BytesIn<?> bytes)
             throws IORuntimeException, BufferUnderflowException, IllegalStateException, InvalidMarshallableException {
-        log.info("LongEvent readMarshallable");
+        log.info("OrderEvent readMarshallable");
         super.readMarshallable(bytes);
     }
 
     @Override
     public void writeMarshallable(BytesOut<?> bytes)
             throws IllegalStateException, BufferOverflowException, BufferUnderflowException, ArithmeticException, InvalidMarshallableException {
-        log.info("LongEvent writeMarshallable");
+        log.info("OrderEvent writeMarshallable");
         super.writeMarshallable(bytes);
     }
 }

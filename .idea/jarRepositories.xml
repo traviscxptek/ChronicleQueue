@@ -7,6 +7,16 @@
       <option name="url" value="https://repo.maven.apache.org/maven2" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="cxp-cxp-core" />
+      <option name="name" value="cxp-cxp-core" />
+      <option name="url" value="https://cxp-172422354804.d.codeartifact.ap-southeast-1.amazonaws.com/maven/cxp-core/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="cxp-cxp-core-snapshots" />
+      <option name="name" value="cxp-cxp-core-snapshots" />
+      <option name="url" value="https://cxp-172422354804.d.codeartifact.ap-southeast-1.amazonaws.com/maven/cxp-core-snapshots/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="central" />
       <option name="name" value="Maven Central repository" />
       <option name="url" value="https://repo1.maven.org/maven2" />
