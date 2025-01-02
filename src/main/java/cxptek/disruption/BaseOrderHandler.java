@@ -1,7 +1,8 @@
-package cxptek.dto.event;
+package cxptek.disruption;
 
 import com.lmax.disruptor.EventHandler;
-import cxptek.dto.event.enums.OrderStatus;
+import cxptek.dto.event.OrderEvent;
+import cxptek.dto.enums.OrderStatus;
 
 public abstract class BaseOrderHandler implements EventHandler<OrderEvent> {
 

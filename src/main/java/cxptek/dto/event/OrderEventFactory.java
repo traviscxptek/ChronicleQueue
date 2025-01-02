@@ -1,13 +1,13 @@
 package cxptek.dto.event;
 
 import com.lmax.disruptor.EventFactory;
-import cxptek.dto.event.enums.OrderStatus;
+import cxptek.dto.enums.OrderStatus;
 
 public class OrderEventFactory implements EventFactory<OrderEvent> {
     @Override
     public OrderEvent newInstance() {
         return OrderEvent.builder()
-                .message("Order Event")
+                .payload("Order Event")
                 .status(OrderStatus.ACTIVE)
                 .build();
     }

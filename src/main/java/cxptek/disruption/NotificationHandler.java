@@ -1,6 +1,7 @@
-package cxptek.dto.event;
+package cxptek.disruption;
 
-import cxptek.dto.event.enums.OrderStatus;
+import cxptek.dto.event.OrderEvent;
+import cxptek.dto.enums.OrderStatus;
 
 public class NotificationHandler extends BaseOrderHandler {
 

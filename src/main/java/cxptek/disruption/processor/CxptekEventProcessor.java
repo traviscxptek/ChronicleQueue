@@ -1,4 +1,4 @@
-package cxptek.dto.event;
+package cxptek.disruption.processor;
 
 import com.lmax.disruptor.AlertException;
 import com.lmax.disruptor.EventHandler;
@@ -9,6 +9,7 @@ import com.lmax.disruptor.Sequence;
 import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.Sequencer;
 import com.lmax.disruptor.TimeoutException;
+import cxptek.dto.event.BaseOrderEvent;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

@@ -1,16 +1,18 @@
-package cxptek.dto.event;
+package cxptek.disruption;
 
-import cxptek.dto.event.enums.OrderStatus;
+import cxptek.dto.event.OrderEvent;
+import cxptek.dto.enums.OrderStatus;
 
-public class BusinessOrderHandler extends BaseOrderHandler {
+public class OrderDataHandler extends BaseOrderHandler {
 
-    private String name = "BusinessOrderHandler";
+    private String name = "OrderDataHandler";
 
-    public BusinessOrderHandler(String handlerName) {
-        this.name = handlerName;
+
+    public OrderDataHandler() {
     }
 
-    public BusinessOrderHandler() {
+    public OrderDataHandler(String name) {
+        this.name = name;
     }
 
     @Override
@@ -21,7 +23,7 @@ public class BusinessOrderHandler extends BaseOrderHandler {
             throw new RuntimeException(e);
         }
         OrderStatus previousStatus = event.getStatus();
-        event.setStatus(OrderStatus.COMPLETED);
+        event.setStatus(OrderStatus.PERSISTED);
         logOrderEvent(name, sequence, event, previousStatus);
     }
 }

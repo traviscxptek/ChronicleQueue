@@ -15,13 +15,8 @@ import java.nio.BufferUnderflowException;
 public class OrderEvent extends BaseOrderEvent {
 
     @Override
-    public String getPayload() {
-        return " Order Id:  %d  status: %s ".formatted(this.id, this.status);
-    }
-
-    @Override
     public String toString() {
-        return this.getPayload();
+        return " Order Id:  %d  status: %s ".formatted(this.id, this.status);
     }
 
     @Override

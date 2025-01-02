@@ -1,4 +1,4 @@
-package cxptek.dto.event.enums;
+package cxptek.dto.enums;
 
 public enum OrderStatus {
 

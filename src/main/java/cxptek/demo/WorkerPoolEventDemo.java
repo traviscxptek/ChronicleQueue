@@ -1,5 +1,6 @@
-package cxptek.main;
+package cxptek.demo;
 
+import com.google.inject.Inject;
 import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.ExceptionHandler;
@@ -9,22 +10,33 @@ import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.Sequencer;
 import com.lmax.disruptor.dsl.ExceptionHandlerWrapper;
 import com.lmax.disruptor.dsl.ProducerType;
-import cxptek.dto.event.BusinessOrderHandler;
-import cxptek.dto.event.CxptekEventProcessor;
+import cxptek.disruption.BusinessOrderHandler;
+import cxptek.disruption.processor.CxptekEventProcessor;
+import cxptek.service.DisruptorService;
 import cxptek.dto.event.OrderEvent;
 import cxptek.dto.event.OrderEventFactory;
-import cxptek.dto.event.OrderDataHandler;
+import cxptek.disruption.OrderDataHandler;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-public class WorkerPoolDistributedEvent {
+@Slf4j
+public class WorkerPoolEventDemo {
 
-    public static void main(String[] args) {
+    private final DisruptorService disruptorService;
+
+    @Inject
+    public WorkerPoolEventDemo(DisruptorService disruptorService) {
+        this.disruptorService = disruptorService;
+    }
+
+    public void start() {
         long startTime = System.currentTimeMillis();
         int bufferSize = 1024;
+
         RingBuffer<OrderEvent> ringBuffer = RingBuffer.create(ProducerType.MULTI,
                 new OrderEventFactory(),
                 bufferSize,
@@ -39,11 +51,6 @@ public class WorkerPoolDistributedEvent {
                 businessWorkerSequence,
                 List.of(businessHandler, businessHandler2));
         businessWorkerSequence.set(ringBuffer.getCursor());
-        ExecutorService businessExecutor = Executors.newFixedThreadPool(businessProcessors.size());
-        businessProcessors.forEach(processor -> {
-            processor.getSequence().set(ringBuffer.getCursor());
-            businessExecutor.submit(processor);
-        });
 
         //persist data after handled logic business
         Sequence[] businessSequences = businessProcessors.stream().map(CxptekEventProcessor::getSequence)
@@ -54,33 +61,30 @@ public class WorkerPoolDistributedEvent {
                 persistSequenceBarrier,
                 persistDataWorkerSequence,
                 List.of(new OrderDataHandler(), new OrderDataHandler("OrderDataHandler v2")));
-        ExecutorService persistDataExecutor = Executors.newFixedThreadPool(persistDataProcessor.size());
-        persistDataProcessor.forEach(processor -> {
-            processor.getSequence().set(ringBuffer.getCursor());
-            persistDataExecutor.submit(processor);
-        });
 
-
-        for (long l = 0; l < 10; l++) {
-            long sequence = ringBuffer.next();
-            OrderEvent event = ringBuffer.get(sequence);
-            event.setId(l);
-            event.setMessage("Message order " + l);
-            ringBuffer.publish(sequence);
+        try (ExecutorService businessExecutor = Executors.newFixedThreadPool(businessProcessors.size());
+             ExecutorService persistDataExecutor = Executors.newFixedThreadPool(persistDataProcessor.size())) {
+            businessProcessors.forEach(processor -> {
+                processor.getSequence().set(ringBuffer.getCursor());
+                businessExecutor.submit(processor);
+            });
+            persistDataProcessor.forEach(processor -> {
+                processor.getSequence().set(ringBuffer.getCursor());
+                persistDataExecutor.submit(processor);
+            });
+            disruptorService.publishSimulatorOrderEvents(ringBuffer, 10);
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            businessExecutor.shutdown();
-            persistDataExecutor.shutdown();
             System.out.println("Events consumer time: " + (System.currentTimeMillis() - startTime));
         }));
     }
 
 
-    private static List<CxptekEventProcessor<OrderEvent>> createProcessors(RingBuffer<OrderEvent> ringBuffer,
-                                                                           SequenceBarrier sequenceBarrier,
-                                                                           Sequence workerSequence,
-                                                                           List<EventHandler<OrderEvent>> handlers) {
+    private List<CxptekEventProcessor<OrderEvent>> createProcessors(RingBuffer<OrderEvent> ringBuffer,
+                                                                    SequenceBarrier sequenceBarrier,
+                                                                    Sequence workerSequence,
+                                                                    List<EventHandler<OrderEvent>> handlers) {
         ExceptionHandler<OrderEvent> exceptionHandler = new ExceptionHandlerWrapper<>();
         return handlers.stream().map(handler ->
                 new CxptekEventProcessor<>(ringBuffer,

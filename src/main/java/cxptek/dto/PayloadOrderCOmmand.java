@@ -1,5 +1,6 @@
-package cxptek.main;
+package cxptek.dto;
 
+import lombok.Setter;
 import net.openhft.chronicle.bytes.BytesIn;
 import net.openhft.chronicle.bytes.BytesMarshallable;
 import net.openhft.chronicle.bytes.BytesOut;
@@ -9,6 +10,7 @@ import net.openhft.chronicle.core.io.InvalidMarshallableException;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 
+@Setter
 public class PayloadOrderCOmmand implements BytesMarshallable {
     long id1;
     long id2;
