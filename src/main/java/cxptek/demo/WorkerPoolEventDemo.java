@@ -2,54 +2,67 @@ package cxptek.demo;
 
 import com.google.inject.Inject;
 import com.lmax.disruptor.BlockingWaitStrategy;
+import com.lmax.disruptor.BusySpinWaitStrategy;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.ExceptionHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.Sequence;
 import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.Sequencer;
+import com.lmax.disruptor.YieldingWaitStrategy;
 import com.lmax.disruptor.dsl.ExceptionHandlerWrapper;
 import com.lmax.disruptor.dsl.ProducerType;
+import cxptek.disruption.BaseOrderHandler;
 import cxptek.disruption.BusinessOrderHandler;
 import cxptek.disruption.processor.CxptekEventProcessor;
 import cxptek.service.DisruptorService;
 import cxptek.dto.event.OrderEvent;
 import cxptek.dto.event.OrderEventFactory;
 import cxptek.disruption.OrderDataHandler;
+import cxptek.service.RingExecutorService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static cxptek.utils.Constants.BUFFER_SIZE;
+
 
 @Slf4j
 public class WorkerPoolEventDemo {
 
     private final DisruptorService disruptorService;
+    private final RingExecutorService ringExecutorService;
 
     @Inject
-    public WorkerPoolEventDemo(DisruptorService disruptorService) {
+    public WorkerPoolEventDemo(DisruptorService disruptorService,
+                               RingExecutorService ringExecutorService) {
         this.disruptorService = disruptorService;
+        this.ringExecutorService = ringExecutorService;
     }
 
     public void start() {
         long startTime = System.currentTimeMillis();
-        int bufferSize = 1024;
 
-        RingBuffer<OrderEvent> ringBuffer = RingBuffer.create(ProducerType.MULTI,
+        RingBuffer<OrderEvent> ringBuffer = RingBuffer.create(ProducerType.SINGLE,
                 new OrderEventFactory(),
-                bufferSize,
+                BUFFER_SIZE,
                 new BlockingWaitStrategy());
 
         SequenceBarrier businessSequenceBarrier = ringBuffer.newBarrier();
         final Sequence businessWorkerSequence = new Sequence(Sequencer.INITIAL_CURSOR_VALUE);
-        EventHandler<OrderEvent> businessHandler = new BusinessOrderHandler();
-        EventHandler<OrderEvent> businessHandler2 = new BusinessOrderHandler("BusinessOrderHandler v2");
+        BaseOrderHandler businessHandler = new BusinessOrderHandler();
+        businessHandler.setRingExecutorService(ringExecutorService);
+        ringExecutorService.addRingExecutor("BusinessHandler");
+        BaseOrderHandler businessHandler2 = new BusinessOrderHandler("BusinessOrderHandler v2");
+        businessHandler2.setRingExecutorService(ringExecutorService);
+        ringExecutorService.addRingExecutor("BusinessOrderHandlerV2");
+
         List<CxptekEventProcessor<OrderEvent>> businessProcessors = createProcessors(ringBuffer,
                 businessSequenceBarrier,
                 businessWorkerSequence,
-                List.of(businessHandler, businessHandler2));
+                List.of(businessHandler));
         businessWorkerSequence.set(ringBuffer.getCursor());
 
         //persist data after handled logic business
@@ -57,10 +70,16 @@ public class WorkerPoolEventDemo {
                 .toArray(Sequence[]::new);
         SequenceBarrier persistSequenceBarrier = ringBuffer.newBarrier(businessSequences);
         final Sequence persistDataWorkerSequence = new Sequence(Sequencer.INITIAL_CURSOR_VALUE);
+        BaseOrderHandler orderDataHandler = new OrderDataHandler();
+        orderDataHandler.setRingExecutorService(ringExecutorService);
+        ringExecutorService.addRingExecutor("OrderDataHandler");
+        BaseOrderHandler orderDataHandler2 = new OrderDataHandler("OrderDataHandler v2");
+        ringExecutorService.addRingExecutor("OrderDataHandlerV2");
+        orderDataHandler2.setRingExecutorService(ringExecutorService);
         List<CxptekEventProcessor<OrderEvent>> persistDataProcessor = createProcessors(ringBuffer,
                 persistSequenceBarrier,
                 persistDataWorkerSequence,
-                List.of(new OrderDataHandler(), new OrderDataHandler("OrderDataHandler v2")));
+                List.of(orderDataHandler, orderDataHandler2));
 
         try (ExecutorService businessExecutor = Executors.newFixedThreadPool(businessProcessors.size());
              ExecutorService persistDataExecutor = Executors.newFixedThreadPool(persistDataProcessor.size())) {
@@ -72,7 +91,7 @@ public class WorkerPoolEventDemo {
                 processor.getSequence().set(ringBuffer.getCursor());
                 persistDataExecutor.submit(processor);
             });
-            disruptorService.publishSimulatorOrderEvents(ringBuffer, 10);
+            disruptorService.publishSimulatorOrderEvents(ringBuffer, 100);
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

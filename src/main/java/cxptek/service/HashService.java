@@ -2,5 +2,7 @@ package cxptek.service;
 
 public interface HashService {
 
-    int hash(String string);
+    int createMD5Hash(String string);
+
+    long createXXHash(String string);
 }
