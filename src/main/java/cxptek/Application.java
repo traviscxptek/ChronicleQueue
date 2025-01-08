@@ -2,8 +2,7 @@ package cxptek;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import cxptek.demo.DistributedEventDemo;
-import cxptek.demo.MultipleDistributedEventDemo;
+import cxptek.demo.phaser.MultiPhaserDemo;
 
 public class Application {
 
@@ -15,7 +14,9 @@ public class Application {
 //        DistributedEventDemo distributedEventDemo = injector.getInstance(DistributedEventDemo.class);
 //        distributedEventDemo.start();
 
-        MultipleDistributedEventDemo multipleDistributedEventDemo = injector.getInstance(MultipleDistributedEventDemo.class);
-        multipleDistributedEventDemo.start();
+//        MultipleDistributedEventDemo multipleDistributedEventDemo = injector.getInstance(MultipleDistributedEventDemo.class);
+//        multipleDistributedEventDemo.start();
+
+        new MultiPhaserDemo().start();
     }
 }

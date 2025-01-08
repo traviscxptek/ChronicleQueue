@@ -47,16 +47,19 @@ public class BusinessOrderHandler extends BaseOrderHandler {
 
     @Override
     public void handler(OrderEvent event, long sequence) {
-//        System.out.printf("Sequence consumer: %d \n", sequence);
-//        if (sequence % BUFFER_SIZE == 0) {
-//            try {
-//                Thread.sleep(SIMULATION_TIME);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
+        if (Objects.nonNull(lockSimulatorService)) {
+            lockSimulatorService.reentrantLock(event.getId());
+        }
+        try {
+            Thread.sleep(SIMULATION_TIME);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         OrderStatus previousStatus = event.getStatus();
         event.setStatus(OrderStatus.COMPLETED);
         logOrderEvent(name, sequence, event, previousStatus);
+        if (Objects.nonNull(lockSimulatorService)) {
+            lockSimulatorService.reentrantUnlock(event.getId());
+        }
     }
 }

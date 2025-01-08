@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
@@ -32,6 +33,7 @@ public class DisruptorOrderHandler extends BaseOrderHandler {
     @Override
     public void handlerWithRingExecutor(OrderEvent event, long sequence) throws ExecutionException, InterruptedException, TimeoutException {
         Consumer<OrderEvent> orderConsumer = order -> handler(order, sequence);
+        Phaser phaser = new Phaser(1);
         ringExecutorService.submitTask(event, orderConsumer)
                 .get(FUTURE_SECONDS_TIMEOUT, TimeUnit.SECONDS);
     }

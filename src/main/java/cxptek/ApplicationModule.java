@@ -11,14 +11,14 @@ import cxptek.service.LocalQueueService;
 import cxptek.service.RingDisruptorService;
 import cxptek.service.RingExecutorService;
 import cxptek.service.RingQueueService;
-import cxptek.service.SimulatorLockService;
+import cxptek.service.LockSimulatorService;
 import cxptek.service.iml.DisruptorServiceImpl;
 import cxptek.service.iml.LocalQueueServiceImpl;
 import cxptek.service.iml.HashServiceImpl;
 import cxptek.service.iml.RingDisruptorServiceImpl;
 import cxptek.service.iml.RingExecutorServiceImpl;
 import cxptek.service.iml.RingQueueServiceImpl;
-import cxptek.service.iml.SimulatorLockServiceImpl;
+import cxptek.service.iml.LockSimulatorServiceImpl;
 
 
 public class ApplicationModule extends AbstractModule {
@@ -26,7 +26,7 @@ public class ApplicationModule extends AbstractModule {
     @Override
     protected void configure() {
         //start application init
-        bind(SimulatorLockService.class).to(SimulatorLockServiceImpl.class).in(Singleton.class);
+        bind(LockSimulatorService.class).to(LockSimulatorServiceImpl.class).in(Singleton.class);
         bind(DisruptorService.class).toInstance(new DisruptorServiceImpl());
         bind(HashService.class).toInstance(new HashServiceImpl());
         bind(LocalQueueService.class).toInstance(new LocalQueueServiceImpl());

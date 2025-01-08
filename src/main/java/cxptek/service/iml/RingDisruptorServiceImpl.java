@@ -60,7 +60,7 @@ public class RingDisruptorServiceImpl implements RingDisruptorService {
         long hash = hashService.createXXHash(HashingUtils.buildOrderHashKey(order));
         Map.Entry<Long, String> entry = ringDisruptorMap.ceilingEntry(hash);
         while (entry == null) {
-            hash = hash / disruptorMap.size();
+            hash = hash / VIRTUAL_RING_SIZE;
             entry = ringDisruptorMap.ceilingEntry(hash);
         }
         String disruptorName = entry.getValue();
